@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "faceSize": 2048,
+  "tileSize": 512,
+  "levels": [
+    {
+      "id": "base",
+      "faceSize": 512,
+      "tilesPerFace": 1,
+      "quality": "preview"
+    },
+    {
+      "id": "l1",
+      "faceSize": 1024,
+      "tilesPerFace": 2,
+      "quality": "intermediate"
+    },
+    {
+      "id": "l2",
+      "faceSize": 2048,
+      "tilesPerFace": 4,
+      "quality": "full"
+    }
+  ],
+  "faces": [
+    "f",
+    "l",
+    "b",
+    "r",
+    "u",
+    "d"
+  ]
+}
