@@ -1,0 +1,191 @@
+{
+  "property": "濱景花園3座",
+  "package": "CNHK-39171_e137d575e1344e85a9dab3f796019f47",
+  "rooms": [
+    {
+      "id": "JM09HFWT",
+      "name": "大門",
+      "stem": "20260831115259",
+      "best": {
+        "x": 0,
+        "y": -361.1659
+      },
+      "index": 1,
+      "original_complete": false,
+      "derived_lowres": true,
+      "complete": true,
+      "lowres": true
+    },
+    {
+      "id": "sYViEn1u",
+      "name": "廚房",
+      "stem": "20260831115329",
+      "best": {
+        "x": 0,
+        "y": -111.696
+      },
+      "index": 2,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "FJSP67Ne",
+      "name": "飯廳",
+      "stem": "20260831115357",
+      "best": {
+        "x": 0,
+        "y": -182.9174
+      },
+      "index": 3,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "3Y4gX3kb",
+      "name": "客廳",
+      "stem": "20260831115425",
+      "best": {
+        "x": 0,
+        "y": -47.3919
+      },
+      "index": 4,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "2E3jFWDH",
+      "name": "客廳 1",
+      "stem": "20260831115451",
+      "best": {
+        "x": 0,
+        "y": -40.8015
+      },
+      "index": 5,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "LapR9ksK",
+      "name": "走廊",
+      "stem": "20260831115522",
+      "best": {
+        "x": 0,
+        "y": 5.6764
+      },
+      "index": 6,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "mi7E6o8Q",
+      "name": "睡房",
+      "stem": "20260831115549",
+      "best": {
+        "x": 0,
+        "y": -188.4701
+      },
+      "index": 7,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "633ttJ0A",
+      "name": "浴室",
+      "stem": "20260831115618",
+      "best": {
+        "x": 0,
+        "y": -87.7006
+      },
+      "index": 8,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "8S6m9osy",
+      "name": "走廊1",
+      "stem": "20260831115712",
+      "best": {
+        "x": 0,
+        "y": 7.258
+      },
+      "index": 9,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "Pjucsg2w",
+      "name": "睡房 1",
+      "stem": "20260831115738",
+      "best": {
+        "x": 0,
+        "y": -149.4008
+      },
+      "index": 10,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "6aPNoH3B",
+      "name": "主人房",
+      "stem": "20260831115803",
+      "best": {
+        "x": 0,
+        "y": -224.6488
+      },
+      "index": 11,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "vpzFhpNt",
+      "name": "主人浴室",
+      "stem": "20260831115832",
+      "best": {
+        "x": 0,
+        "y": -77.2741
+      },
+      "index": 12,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "GWOyVSw1",
+      "name": "主人房 1",
+      "stem": "20260831115858",
+      "best": {
+        "x": 0,
+        "y": -103.4393
+      },
+      "index": 13,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    },
+    {
+      "id": "Q8biUi98",
+      "name": "主人房2",
+      "stem": "20260831115931",
+      "best": {
+        "x": 0,
+        "y": -43.0362
+      },
+      "index": 14,
+      "original_complete": true,
+      "complete": true,
+      "lowres": false
+    }
+  ],
+  "face_order": "f -> l -> b -> r -> f",
+  "viewer": "CSS 3D cubemap, no WebGL"
+}
