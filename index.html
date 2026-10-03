@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>濱景花園3座｜360° VR</title>
+<style>
+:root{--panel:280px;--bg:#111;--fg:#fff;--muted:#bdbdbd;--line:#333;--accent:#f3f3f3;--cube:2048px;--half:1024px}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;min-height:100dvh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang HK","Microsoft JhengHei",Arial,sans-serif;background:#111;color:#fff}
+#app{height:100vh;height:100dvh;min-height:0;display:grid;grid-template-columns:var(--panel) 1fr;overflow:hidden}
+#side{background:#191919;border-right:1px solid #333;display:flex;flex-direction:column;min-width:0;min-height:0;height:100vh;height:100dvh;overflow:hidden;z-index:10}
+.head{padding:18px 16px 12px;border-bottom:1px solid #333}.head h1{font-size:18px;margin:0 0 5px}.head p{font-size:12px;color:#aaa;margin:0;line-height:1.45}
+#rooms{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:8px;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}.room{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;width:100%;border:0;background:transparent;color:#ddd;text-align:left;padding:8px;border-radius:9px;cursor:pointer}.room:hover{background:#272727}.room.active{background:#383838;color:#fff}.room img{width:62px;height:42px;object-fit:cover;border-radius:6px;background:#333}.room .name{font-size:15px;font-weight:600}.room .note{font-size:11px;color:#aaa;margin-top:2px}
+#main{position:relative;min-width:0;overflow:hidden;background:#000}
+#stage{position:absolute;inset:0;overflow:hidden;perspective:700px;perspective-origin:50% 50%;touch-action:none;cursor:grab;background:#000}
+#stage.dragging{cursor:grabbing}
+#cube{position:absolute;left:50%;top:50%;width:var(--cube);height:var(--cube);margin-left:calc(var(--half) * -1);margin-top:calc(var(--half) * -1);transform-style:preserve-3d;will-change:transform}
+.face{position:absolute;inset:0;width:var(--cube);height:var(--cube);backface-visibility:hidden;overflow:hidden;background:#111}
+.face img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.face.f{transform:translateZ(calc(var(--half) * -1))}
+.face.l{transform:rotateY(-90deg) translateZ(calc(var(--half) * -1))}
+.face.b{transform:rotateY(180deg) translateZ(calc(var(--half) * -1))}
+.face.r{transform:rotateY(90deg) translateZ(calc(var(--half) * -1))}
+.face.u{transform:rotateX(-90deg) translateZ(calc(var(--half) * -1))}
+.face.d{transform:rotateX(90deg) translateZ(calc(var(--half) * -1))}
+#topbar{position:absolute;top:0;left:0;right:0;z-index:15;padding:12px;display:flex;align-items:center;gap:8px;background:linear-gradient(#000b,transparent)}
+#title{font-size:17px;font-weight:700;margin-right:auto;text-shadow:0 1px 3px #000}.badge{font-size:11px;padding:4px 7px;border-radius:999px;background:#000a;border:1px solid #666;color:#ddd}
+.ctrl{border:1px solid #666;background:#111c;color:#fff;border-radius:8px;padding:8px 11px;cursor:pointer;font-size:14px}.ctrl:hover{background:#333}.ctrl:active{transform:translateY(1px)}
+#hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:5;background:#000a;border:1px solid #555;border-radius:999px;padding:7px 12px;font-size:12px;color:#ddd;pointer-events:none;white-space:nowrap;transition:opacity .5s}
+#error{display:none;position:absolute;z-index:20;inset:0;background:#111;color:#fff;padding:40px;overflow:auto}.errorbox{max-width:720px;margin:auto;background:#222;border:1px solid #555;border-radius:14px;padding:20px;line-height:1.6}
+#grid{display:none;position:absolute;inset:0;z-index:8;background:#111;overflow:auto;padding:72px 16px 24px}#gridBack{position:fixed;top:12px;right:16px;z-index:18}.gridwrap{max-width:1200px;margin:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.tile{background:#1d1d1d;border:1px solid #333;border-radius:10px;overflow:hidden}.tile img{display:block;width:100%;height:auto}.tile b{display:block;padding:8px 10px;font-size:13px;color:#ddd}
+#mobileRooms{display:none}
+@media(max-width:760px){:root{--panel:0px}#app{display:block;height:100dvh}#side{display:none}#main{height:100dvh}#topbar{padding:calc(8px + env(safe-area-inset-top)) 8px 8px;display:grid;grid-template-columns:minmax(0,1fr) repeat(4,42px);gap:6px;align-items:center;background:linear-gradient(#000d,#0007 72%,transparent)}#mobileRooms{display:block;max-width:none;width:100%;min-width:0;border:1px solid #666;background:#111e;color:#fff;border-radius:8px;padding:9px 8px;font-size:14px}#title,#quality,.ctrl.txt{display:none}#zoomOut,#zoomIn,#photoMode,#full{display:inline-block;width:42px;min-width:42px;height:40px;padding:0;font-size:18px}#photoMode{font-size:0}#photoMode::after{content:"▦";font-size:18px}.gridwrap{grid-template-columns:1fr}#grid{padding:calc(64px + env(safe-area-inset-top)) 10px calc(18px + env(safe-area-inset-bottom))}#gridBack{top:calc(8px + env(safe-area-inset-top));right:8px}#hint{bottom:calc(8px + env(safe-area-inset-bottom));font-size:11px;max-width:92%;overflow:hidden;text-overflow:ellipsis}#walkDock{left:8px;right:8px;bottom:calc(48px + env(safe-area-inset-bottom));transform:none;max-width:none}#walkMsg{bottom:calc(104px + env(safe-area-inset-bottom))}.walkBtn{padding:9px 11px}.doorHotspot .doorRing{width:50px;height:50px;font-size:22px}.doorHotspot .doorLabel{font-size:11px}}
+
+#walkDock{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);z-index:12;display:flex;gap:8px;max-width:min(780px,82%);overflow-x:auto;padding:7px 9px;border-radius:14px;background:#0008;border:1px solid #555;backdrop-filter:blur(5px);scrollbar-width:thin}
+.walkBtn{flex:0 0 auto;border:1px solid #777;background:#171717e8;color:#fff;border-radius:10px;padding:8px 12px;cursor:pointer;font-size:13px;white-space:nowrap}.walkBtn:hover{background:#333}.walkBtn strong{font-weight:700}.walkBtn small{display:block;color:#aaa;font-size:10px;margin-top:2px}
+#walkFx{position:absolute;inset:0;z-index:13;pointer-events:none;background:radial-gradient(circle at 50% 54%,transparent 0 32%,#0000 50%,#0008 100%);opacity:0;transition:opacity .46s cubic-bezier(.22,.61,.36,1)}
+#walkFx.active{opacity:.48}
+#walkMsg{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);z-index:14;background:#000b;border:1px solid #666;border-radius:999px;padding:7px 12px;font-size:12px;color:#eee;opacity:0;pointer-events:none;transition:opacity .2s}
+#walkMsg.show{opacity:1}
+#stage.walking #cube{transition:transform .56s cubic-bezier(.22,.61,.36,1),filter .38s ease}
+#stage.walking.phaseOut #cube{filter:blur(1.15px) brightness(.82) saturate(.94)}
+#stage.walking.phaseIn #cube{filter:blur(.25px) brightness(.98) saturate(1)}
+#walkMode{border-color:#888}#walkMode.active{background:#eee;color:#111;border-color:#fff}
+
+#hotspots{position:absolute;inset:0;z-index:11;pointer-events:none;overflow:hidden}
+.doorHotspot{--hsScale:1;position:absolute;left:50%;top:60%;transform:translate(-50%,-50%) scale(var(--hsScale));transform-origin:center;pointer-events:auto;border:0;background:transparent;color:#fff;cursor:pointer;padding:0;filter:drop-shadow(0 2px 8px #000);transition:opacity .12s ease,transform .12s ease}
+.doorHotspot .doorRing{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#111c;border:2px solid #fff;box-shadow:0 0 0 6px #ffffff24,0 0 22px #000a;font-size:25px;line-height:1;animation:doorPulse 1.8s ease-in-out infinite}
+.doorHotspot .doorLabel{display:block;margin-top:7px;padding:5px 9px;border-radius:999px;background:#000d;border:1px solid #777;font-size:12px;font-weight:700;white-space:nowrap}
+.doorHotspot:hover .doorRing,.doorHotspot:focus-visible .doorRing{background:#fff;color:#111;box-shadow:0 0 0 8px #ffffff30,0 0 28px #000}
+.doorHotspot:hover{transform:translate(-50%,-50%) scale(calc(var(--hsScale) * 1.08))}
+.doorHotspot:focus-visible{outline:2px solid #fff;outline-offset:5px;border-radius:999px}
+@keyframes doorPulse{0%,100%{box-shadow:0 0 0 5px #ffffff1f,0 0 20px #000a}50%{box-shadow:0 0 0 11px #ffffff08,0 0 28px #000c}}
+
+@media(max-width:760px){
+  #walkDock{left:8px;right:8px;bottom:calc(48px + env(safe-area-inset-bottom));transform:none;max-width:none}
+  #walkMsg{bottom:calc(104px + env(safe-area-inset-bottom))}
+  .walkBtn{padding:9px 11px}
+  .doorHotspot .doorRing{width:50px;height:50px;font-size:22px}
+  .doorHotspot .doorLabel{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+ <aside id="side"><div class="head"><h1>濱景花園 3座</h1><p>360° CubeMap VR<br>桌面 / 手機｜穩定平滑導航</p></div><div id="rooms"></div></aside>
+ <main id="main">
+  <div id="stage" aria-label="360 VR viewer">
+   <div id="cube">
+    <div class="face f"><img id="img-f" alt="front" decoding="async"></div>
+    <div class="face l"><img id="img-l" alt="left cube face" decoding="async"></div>
+    <div class="face b"><img id="img-b" alt="back" decoding="async"></div>
+    <div class="face r"><img id="img-r" alt="right cube face" decoding="async"></div>
+    <div class="face u"><img id="img-u" alt="ceiling" decoding="async"></div>
+    <div class="face d"><img id="img-d" alt="floor" decoding="async"></div>
+   </div>
+  </div>
+  <div id="topbar"><select id="mobileRooms"></select><div id="title">載入中…</div><span id="quality" class="badge"></span><button class="ctrl" id="zoomOut" title="縮小">−</button><button class="ctrl" id="zoomIn" title="放大">＋</button><button class="ctrl txt" id="reset">重設視角</button><button class="ctrl txt active" id="walkMode">門口導航</button><button class="ctrl txt" id="photoMode">六面相片</button><button class="ctrl" id="full" title="全螢幕">⛶</button></div>
+  <div id="hotspots" aria-label="門口導航"></div>
+  <div id="walkMsg"></div>
+  <div id="walkFx"></div>
+  <div id="hint">拖曳四周觀看 · 點擊門口進入房間 · 雙指縮放</div>
+  <div id="grid"><button class="ctrl" id="gridBack" type="button">← 返回 VR</button><div class="gridwrap" id="gridwrap"></div></div>
+  <div id="error"><div class="errorbox"><h2>無法顯示 3D 視圖</h2><p>這個瀏覽器沒有正常啟用 CSS 3D。你仍可以按「六面相片」查看所有原始照片。</p><button class="ctrl" id="errorPhotoMode" type="button">顯示六面相片</button></div></div>
+ </main>
+</div>
+<script>
+const rooms=[{"id":"sYViEn1u","name":"廚房","stem":"20260831115329","best":{"x":0,"y":-111.696},"index":2,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":235.6989,"z":117.24},"rotY":175.7044},{"id":"FJSP67Ne","name":"飯廳","stem":"20260831115357","best":{"x":0,"y":-182.9174},"index":3,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":115.5456,"z":38.0159},"rotY":87.1674},{"id":"3Y4gX3kb","name":"客廳","stem":"20260831115425","best":{"x":0,"y":-47.3919},"index":4,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":103.985,"z":-41.8635},"rotY":73.1122},{"id":"2E3jFWDH","name":"客廳 1","stem":"20260831115451","best":{"x":0,"y":-40.8015},"index":5,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":101.8133,"z":-97.8306},"rotY":50.4588},{"id":"LapR9ksK","name":"走廊","stem":"20260831115522","best":{"x":0,"y":5.6764},"index":6,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-1.3285,"z":30.4586},"rotY":83.2455},{"id":"mi7E6o8Q","name":"睡房","stem":"20260831115549","best":{"x":0,"y":-188.4701},"index":7,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":3.3298,"z":-32.1705},"rotY":356.0891},{"id":"633ttJ0A","name":"浴室","stem":"20260831115618","best":{"x":0,"y":-87.7006},"index":8,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-15.0016,"z":87.8095},"rotY":169.4515},{"id":"8S6m9osy","name":"走廊1","stem":"20260831115712","best":{"x":0,"y":7.258},"index":9,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-75.5114,"z":31.2567},"rotY":83.4808},{"id":"Pjucsg2w","name":"睡房 1","stem":"20260831115738","best":{"x":0,"y":-149.4008},"index":10,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-98.7824,"z":-33.305},"rotY":23.7393},{"id":"6aPNoH3B","name":"主人房","stem":"20260831115803","best":{"x":0,"y":-224.6488},"index":11,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-107.7342,"z":36.979},"rotY":88.7212},{"id":"vpzFhpNt","name":"主人浴室","stem":"20260831115832","best":{"x":0,"y":-77.2741},"index":12,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-101.8342,"z":92.7838},"rotY":178.3351},{"id":"GWOyVSw1","name":"主人房 1","stem":"20260831115858","best":{"x":0,"y":-103.4393},"index":13,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-187.6141,"z":37.2287},"rotY":94.7242},{"id":"Q8biUi98","name":"主人房2","stem":"20260831115931","best":{"x":0,"y":-43.0362},"index":14,"original_complete":true,"complete":true,"lowres":false,"pos":{"x":-256.1324,"z":25.5147},"rotY":88.8156}];
+const labels={f:'前方 / Front',l:'下一面 / _l',b:'後方 / Back',r:'另一面 / _r',u:'天花 / Ceiling',d:'地面 / Floor'};
+const adjacency={"sYViEn1u":["FJSP67Ne"],"FJSP67Ne":["sYViEn1u","3Y4gX3kb","LapR9ksK"],"3Y4gX3kb":["FJSP67Ne","2E3jFWDH"],"2E3jFWDH":["3Y4gX3kb"],"LapR9ksK":["FJSP67Ne","mi7E6o8Q","633ttJ0A","8S6m9osy"],"mi7E6o8Q":["LapR9ksK","633ttJ0A"],"633ttJ0A":["LapR9ksK","mi7E6o8Q"],"8S6m9osy":["LapR9ksK","Pjucsg2w","6aPNoH3B"],"Pjucsg2w":["8S6m9osy"],"6aPNoH3B":["8S6m9osy","vpzFhpNt","GWOyVSw1"],"vpzFhpNt":["6aPNoH3B"],"GWOyVSw1":["6aPNoH3B","Q8biUi98"],"Q8biUi98":["GWOyVSw1"]};
+let current=0,yaw=0,pitch=0,persp=700,drag=false,lastX=0,lastY=0,photo=false,walking=false,walkMode=true,pinchStartDist=0,pinchStartPersp=700;
+const stage=document.getElementById('stage'),cube=document.getElementById('cube'),list=document.getElementById('rooms'),sel=document.getElementById('mobileRooms');
+const title=document.getElementById('title'),quality=document.getElementById('quality'),grid=document.getElementById('grid'),gridwrap=document.getElementById('gridwrap');
+const hotspots=document.getElementById('hotspots'),walkFx=document.getElementById('walkFx'),walkMsg=document.getElementById('walkMsg');
+const faceEls=Object.fromEntries('flbrud'.split('').map(c=>[c,document.getElementById('img-'+c)]));
+function asset(stem,c){return `assets/faces/${stem}_${c}.jpg`}
+function updateTransform(){
+  stage.style.perspective=persp+'px';
+  cube.style.transform=`translateZ(${persp-0.5}px) rotateX(${pitch}deg) rotateY(${yaw}deg)`;
+  updateHotspots();
+}
+function setRoom(i){
+  current=i; const r=rooms[i]; yaw=0; pitch=0; updateTransform();
+  title.textContent=(i+1)+'. '+r.name;
+  quality.textContent='原始 2048×2048 CubeMap';
+  'flbrud'.split('').forEach(c=>{faceEls[c].src=asset(r.stem,c)});
+  [...list.querySelectorAll('.room')].forEach((b,j)=>b.classList.toggle('active',j===i));
+  sel.value=String(i); buildGrid(); buildHotspots();
+}
+function buildRooms(){rooms.forEach((r,i)=>{
+ const b=document.createElement('button'); b.className='room'; b.innerHTML=`<img src="assets/thumbs/${r.stem}.jpg" loading="lazy" decoding="async" alt="${r.name}"><div><div class="name">${i+1}. ${r.name}</div><div class="note">原始六面相片</div></div>`; b.onclick=()=>setRoom(i); list.appendChild(b);
+ const o=document.createElement('option');o.value=String(i);o.textContent=(i+1)+'. '+r.name;sel.appendChild(o);
+});sel.onchange=()=>setRoom(+sel.value)}
+function buildGrid(){const r=rooms[current];gridwrap.innerHTML='';'flbrud'.split('').forEach(c=>{const d=document.createElement('div');d.className='tile';d.innerHTML=`<img src="${asset(r.stem,c)}" loading="lazy" decoding="async" alt="${r.name} ${labels[c]}"><b>${labels[c]}</b>`;gridwrap.appendChild(d)})}
+function normAng(a){while(a>180)a-=360;while(a<=-180)a+=360;return a}
+function bearing(a,b){return Math.atan2(b.pos.x-a.pos.x,b.pos.z-a.pos.z)*180/Math.PI}
+function roomIndexById(id){return rooms.findIndex(r=>r.id===id)}
+function neighborIndexes(){return (adjacency[rooms[current].id]||[]).map(roomIndexById).filter(i=>i>=0)}
+function dist(a,b){return Math.hypot(b.pos.x-a.pos.x,b.pos.z-a.pos.z)}
+function showWalkMsg(t){walkMsg.textContent=t;walkMsg.classList.add('show');clearTimeout(showWalkMsg.t);showWalkMsg.t=setTimeout(()=>walkMsg.classList.remove('show'),1300)}
+function buildHotspots(){
+  hotspots.innerHTML='';
+  hotspots.style.display=(walkMode&&!photo)?'block':'none';
+  if(!walkMode||photo)return;
+  const a=rooms[current], ns=neighborIndexes();
+  ns.sort((i,j)=>dist(a,rooms[i])-dist(a,rooms[j]));
+  ns.forEach(i=>{
+    const b=rooms[i],btn=document.createElement('button');
+    btn.className='doorHotspot'; btn.type='button'; btn.dataset.target=String(i);
+    btn.setAttribute('aria-label','進入 '+b.name);
+    btn.innerHTML=`<span class="doorRing">🚪</span><span class="doorLabel">進入 ${b.name}</span>`;
+    btn.addEventListener('mousedown',e=>e.stopPropagation());
+    btn.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+    btn.onclick=e=>{e.stopPropagation();walkTo(i)};
+    hotspots.appendChild(btn);
+  });
+  updateHotspots();
+}
+function updateHotspots(){
+  if(!hotspots||!walkMode||photo||!hotspots.children.length)return;
+  const a=rooms[current], view=normAng(a.rotY+yaw), w=stage.clientWidth||1, h=stage.clientHeight||1;
+  const pitchShift=Math.tan(Math.max(-70,Math.min(70,pitch))*Math.PI/180)*persp;
+  [...hotspots.children].forEach((el,n)=>{
+    const i=+el.dataset.target,b=rooms[i];
+    const rel=normAng(bearing(a,b)-view),rad=rel*Math.PI/180;
+    const facing=Math.cos(rad),x=w/2+Math.tan(rad)*persp;
+    const visible=facing>0.20 && x>-100 && x<w+100;
+    el.style.opacity=visible?'1':'0'; el.style.pointerEvents=visible?'auto':'none';
+    if(!visible)return;
+    const d=dist(a,b),scale=Math.max(.78,Math.min(1.12,1.18-d/420));
+    let y=h*.61+pitchShift;
+    y=Math.max(92,Math.min(h-86,y));
+    el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--hsScale',scale.toFixed(3));
+  });
+}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+function preloadRoom(i){
+  const r=rooms[i];
+  return Promise.all('flbrud'.split('').map(c=>new Promise(resolve=>{
+    const im=new Image(); im.onload=resolve; im.onerror=resolve; im.src=asset(r.stem,c);
+  })));
+}
+async function walkTo(i){
+  if(walking||i<0||i===current)return;
+  if(photo)togglePhotoMode(false);
+  const a=rooms[current],b=rooms[i],travel=bearing(a,b),startPersp=persp;
+  walking=true; hotspots.style.display='none';
+  await preloadRoom(i);
+  // Phase 1: turn naturally toward the doorway. Keep the existing cube visible.
+  stage.classList.add('walking','phaseOut');
+  yaw=normAng(travel-a.rotY); pitch=Math.max(-6,Math.min(6,pitch)); updateTransform();
+  await sleep(240);
+  // Phase 2: gently move forward. Never fade the cube to zero.
+  walkFx.classList.add('active');
+  persp=Math.min(1500,startPersp+145); updateTransform();
+  await sleep(330);
+  // At the peak of the motion, swap to the already-preloaded destination faces.
+  current=i; const r=rooms[i];
+  title.textContent=(i+1)+'. '+r.name; quality.textContent='原始 2048×2048 CubeMap';
+  'flbrud'.split('').forEach(c=>{faceEls[c].src=asset(r.stem,c)});
+  [...list.querySelectorAll('.room')].forEach((btn,j)=>btn.classList.toggle('active',j===i));
+  sel.value=String(i); buildGrid();
+  yaw=normAng(travel-r.rotY); pitch=0;
+  stage.classList.remove('phaseOut'); stage.classList.add('phaseIn');
+  persp=Math.min(1500,startPersp+95); updateTransform();
+  await sleep(150);
+  // Phase 3: settle smoothly into the new camera position.
+  walkFx.classList.remove('active');
+  persp=startPersp; updateTransform();
+  await sleep(470);
+  stage.classList.remove('walking','phaseIn');
+  walking=false; buildHotspots(); showWalkMsg('已到 '+rooms[current].name);
+}
+function walkForward(){
+  const ns=neighborIndexes(); if(!ns.length){showWalkMsg('這個位置沒有下一個步行點');return}
+  const a=rooms[current],view=normAng(a.rotY+yaw);
+  let best=ns[0],bestDiff=999;
+  ns.forEach(i=>{const d=Math.abs(normAng(bearing(a,rooms[i])-view));if(d<bestDiff){bestDiff=d;best=i}});
+  walkTo(best);
+}
+function togglePhotoMode(force){photo=(typeof force==='boolean')?force:!photo;grid.style.display=photo?'block':'none';document.getElementById('photoMode').textContent=photo?'返回 VR':'六面相片';hotspots.style.display=photo?'none':(walkMode?'block':'none');buildHotspots()}
+window.togglePhotoMode=togglePhotoMode;
+function fitPerspective(){const h=stage.clientHeight||800;persp=Math.max(420,Math.min(900,h*0.82));updateTransform()}
+function touchDistance(t){const a=t[0],b=t[1];return Math.hypot(b.clientX-a.clientX,b.clientY-a.clientY)}
+function start(e){
+  if(e.touches&&e.touches.length>=2){drag=false;stage.classList.remove('dragging');pinchStartDist=touchDistance(e.touches);pinchStartPersp=persp;e.preventDefault();return}
+  drag=true;stage.classList.add('dragging');const p=e.touches?e.touches[0]:e;lastX=p.clientX;lastY=p.clientY;e.preventDefault()
+}
+function move(e){
+  if(e.touches&&e.touches.length>=2){const d=touchDistance(e.touches);if(pinchStartDist>0){persp=Math.max(320,Math.min(1500,pinchStartPersp*(d/pinchStartDist)));updateTransform()}e.preventDefault();return}
+  if(!drag)return;const p=e.touches?e.touches[0]:e;const dx=p.clientX-lastX,dy=p.clientY-lastY;lastX=p.clientX;lastY=p.clientY;yaw-=dx*.16;pitch+=dy*.16;pitch=Math.max(-84,Math.min(84,pitch));updateTransform();e.preventDefault()
+}
+function end(e){
+  if(e&&e.touches&&e.touches.length===1){const p=e.touches[0];drag=true;lastX=p.clientX;lastY=p.clientY;pinchStartDist=0;return}
+  drag=false;pinchStartDist=0;stage.classList.remove('dragging')
+}
+stage.addEventListener('mousedown',start);window.addEventListener('mousemove',move);window.addEventListener('mouseup',end);stage.addEventListener('touchstart',start,{passive:false});window.addEventListener('touchmove',move,{passive:false});window.addEventListener('touchend',end,{passive:false});window.addEventListener('touchcancel',end,{passive:false});
+stage.addEventListener('wheel',e=>{e.preventDefault();persp=Math.max(320,Math.min(1500,persp-e.deltaY*.45));updateTransform()},{passive:false});
+stage.addEventListener('dblclick',e=>{if(walkMode&&!photo){e.preventDefault();walkForward()}});
+document.getElementById('zoomIn').onclick=()=>{persp=Math.min(1500,persp+100);updateTransform()};document.getElementById('zoomOut').onclick=()=>{persp=Math.max(320,persp-100);updateTransform()};document.getElementById('reset').onclick=()=>{yaw=0;pitch=0;fitPerspective()};document.getElementById('walkMode').onclick=()=>{walkMode=!walkMode;document.getElementById('walkMode').classList.toggle('active',walkMode);document.getElementById('walkMode').textContent=walkMode?'門口導航':'顯示門口';buildHotspots()};document.getElementById('photoMode').onclick=()=>togglePhotoMode();document.getElementById('gridBack').onclick=()=>togglePhotoMode(false);document.getElementById('errorPhotoMode').onclick=()=>togglePhotoMode(true);const fullBtn=document.getElementById('full');if(!document.documentElement.requestFullscreen&&!document.documentElement.webkitRequestFullscreen){fullBtn.style.display='none'}fullBtn.onclick=()=>{const root=document.documentElement;if(!document.fullscreenElement&&!document.webkitFullscreenElement){(root.requestFullscreen||root.webkitRequestFullscreen)?.call(root)}else{(document.exitFullscreen||document.webkitExitFullscreen)?.call(document)}};
+window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if((k==='w'||e.key===' ')&&walkMode&&!photo){e.preventDefault();walkForward();return}if(k==='a'||e.key==='ArrowLeft')yaw+=8;if(k==='d'||e.key==='ArrowRight')yaw-=8;if(e.key==='ArrowUp')pitch=Math.max(-84,pitch-6);if(e.key==='ArrowDown')pitch=Math.min(84,pitch+6);updateTransform()});
+window.addEventListener('resize',()=>{if(!drag)fitPerspective()});
+let failCount=0;Object.values(faceEls).forEach(im=>im.addEventListener('error',()=>{failCount++;if(failCount>=2)document.getElementById('error').style.display='block'}));
+if(!(window.CSS&&CSS.supports('transform-style','preserve-3d'))) document.getElementById('error').style.display='block';
+buildRooms();fitPerspective();setRoom(2);setTimeout(()=>document.getElementById('hint').style.opacity='0.25',4500);
+</script>
+</body></html>
